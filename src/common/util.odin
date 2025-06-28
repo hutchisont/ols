@@ -5,6 +5,7 @@ import "core:fmt"
 import "core:log"
 import "core:mem"
 import "core:os"
+import "core:os/os2"
 import "core:path/filepath"
 import "core:path/slashpath"
 import "core:strings"
@@ -110,7 +111,7 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .Linux || ODIN_OS =
 		return 0, true, stdout[0:index]
 	}
 
-	foreign libc 
+	foreign libc
 	{
 		popen :: proc(command: cstring, type: cstring) -> ^FILE ---
 		pclose :: proc(stream: ^FILE) -> i32 ---
@@ -119,12 +120,12 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .Linux || ODIN_OS =
 }
 
 get_executable_path :: proc(allocator := context.temp_allocator) -> string {
-	exe_path, ok := filepath.abs(os.args[0], context.temp_allocator)
+	exe_dir, err := os2.get_executable_directory(allocator)
 
-	if !ok {
+	if err != nil {
 		log.error("Failed to resolve executable path")
 		return ""
 	}
 
-	return filepath.dir(exe_path, allocator)
+	return exe_dir
 }
